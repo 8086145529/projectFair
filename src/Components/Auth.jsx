@@ -1,16 +1,45 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import loginimg from '../Assets/access-control-system-abstract-concept_335657-3180.avif'
 import { Form } from 'react-bootstrap'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { registerAPI } from '../Services/allAPI';
+import { loginAPI, registerAPI } from '../Services/allAPI';
+import { tokenAuthorisationContext } from '../Contexts/TokenAuth';
 function Auth({ register }) {
   const navigate = useNavigate()
+  const {isAuthorized,setIsAuthorized} = useContext(tokenAuthorisationContext)
   const [userData, setUserData] = useState({
     username: "", email: "", password: ""
   })
   const isRegisterForm = register ? true : false // means registerinte value true or false aakam.ith vech nammal jsxil registerinte value true aanenkil chilath display cheyukka enn kodukkum.ee registerinte value true aavunnath,user /register path select cheyumbol aan.aa path alla select cheythath enkil register false aayirikum.
+
+  const handleLogin = async(e) =>{
+    e.preventDefault()
+    const {email,password} = userData
+    if (!email || !password) {
+      toast.info("Please fill the form completely!!!")
+    } else {
+      console.log(userData);
+      const result = await loginAPI(userData)
+      if (result.status === 200) {
+        // toast.success(`${result.data.username} has registered successfully !!!`)
+        sessionStorage.setItem("existingUser",JSON.stringify(result.data.existingUser))
+        sessionStorage.setItem("token",result.data.token)
+        setUserData({
+          email: "", password: ""
+        })
+        setIsAuthorized(true)
+        navigate('/')
+      } else {
+        toast.warning(result.response.data)
+        console.log(result);
+      }
+
+    }
+    
+  }
+
 
   const handleRegister = async (e) => {
     e.preventDefault()
@@ -72,7 +101,7 @@ function Auth({ register }) {
                         <p>Already have an Account?Click here to <Link style={{ color: 'black' }} to={'/login'}>Login</Link></p>
                       </div> :
                       <div>
-                        <button className='btn btn-light mb-2'>Login </button>
+                        <button onClick={handleLogin} className='btn btn-light mb-2'>Login </button>
                         <p>New User?Click here to <Link style={{ color: 'black' }} to={'/register'}>Register</Link></p>
                       </div>
 

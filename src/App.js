@@ -1,5 +1,5 @@
 
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 
 import Dashboard from './Pages/Dashboard';
@@ -8,9 +8,12 @@ import Projects from './Pages/Projects';
 import Home from './Pages/Home';
 import Footer from './Components/Footer';
 import Auth from './Components/Auth';
+import { useContext } from 'react';
+import { tokenAuthorisationContext } from './Contexts/TokenAuth';
 
 
 function App() {
+  const {isAuthorized,setIsAuthorized} = useContext(tokenAuthorisationContext)
   return (
     <div>
    <Routes>
@@ -22,8 +25,10 @@ function App() {
     {/* It can be read as "if register is truthy, assign true to isRegisterForm; otherwise, assign false". Since register is explicitly passed as <Auth register/>, it will be truthy, and isRegisterForm will be set to true.i.e whenever and only when user follows /register path,register props passed to Auth component and isRegisterForm becomes true*/}
     {/* We can also use any other name as props+ (eg: Register) instead of register */}
     <Route path='/register' element={<Auth register/>}/>
-    <Route path='/dashboard' element={<Dashboard/>}/>
-    <Route path='/projects' element={<Projects/>}/>
+    <Route path='/dashboard' element={isAuthorized?<Dashboard/>:<Home/>}/>
+    <Route path='/projects' element={isAuthorized?<Projects/>:<Home/>}/>
+    {/* This * indicates the routes requested or entered by the user which are not defined by the creater like the above */}
+    <Route path='/*' element={<Navigate to={'/'}/>}/>
    </Routes>
    <Footer/>
     </div>
